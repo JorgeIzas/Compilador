@@ -25,60 +25,98 @@ init with {:
 
 terminal PROPIEDADES, CLASE, METODO, PUBLICA, PUBLICO, PRIVADA, PROTEGIDA, STRING, INT, REAL;
 terminal BOOLEAN, NULL, OR, AND, IF, ELSE, ELIF, RETURN, FROM, WHILE, INC, DEC, DO, PRINT;
-terminal GET, INSTANCIAR, TRUE, FALSE;
+terminal GET, INSTANCIAR, TRUE, FALSE, FINDELINEA;
 terminal PARENTL, PARENTR, LLAVEL, LLAVER, CORCHL, CORCHR, PUNTO, COMA, PUNTOCOMA, COMILLA;
 terminal IGUAL, MENQ, MAYQ, EQUAL, DIFERENTE, SUMA, RESTA, MULTI, DIVI, MODULO, EXP;
 terminal token NUMERO, ID;
 
-non terminal expr_list;
+non terminal S;
 non terminal Nodo expr, expr_part;
+non terminal BLOQUE_VARIABLES, TIPO_VARIABLES, CUERPO_BLOQUE_VARIABLES, VARIABLES_SALIDA, METODO_SALIDA;
+non terminal METODO_ENTRADA, SENTENCIA_SI, CONDICION_SENTENCIA_SI, CUERPO_SENTENCIA_SI;
+non terminal VALOR_SALIDA, BLOQUE_SINO, VALOR_VARIABLE, CICLO_DESDE, INICIO_DESDE, CUERPO_DESDE;
+non terminal CONDICION_HACER, CUERPO_HACER, OPERACION_HACER;
 
 precedence left SUMA, RESTA;
 precedence right MULTI, DIVI;
 
 
-start with expr_list;
+start with S;
 
-expr_list ::= expr_list expr_part:e {: 
-                parser.arbolSintactico.agregarHijo(e);
-            :}
-            | expr_part:e {:
-                parser.arbolSintactico.agregarHijo(e);
-            :};
-expr_part ::= ID:id IGUAL expr:e {:
-                Nodo expresion = new Nodo(Nodo.TIPO_EXPRESION,0);
-                Nodo identificador = new Nodo(Nodo.TIPO_IDENTIFICADOR, id.getCadena());
-                Nodo igual = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_IGUAL);
-                expresion.agregarHijo(identificador);
-                expresion.agregarHijo(igual);
-                expresion.agregarHijo(e);
-                RESULT=expresion;
-            :} PUNTOCOMA;
-            
-expr ::=  NUMERO:d {: RESULT=new Nodo(d.getEntero()); :}
-        | ID:id {: RESULT=new Nodo(Nodo.TIPO_IDENTIFICADOR, id.getCadena()); :}
-        |expr:l SUMA expr:r {: 
-            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_SUMA);
-            raiz.agregarHijo(l);
-            raiz.agregarHijo(r);
-            RESULT=raiz; 
-        :}
-        |expr:l RESTA expr:r {: 
-            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_RESTA);
-            raiz.agregarHijo(l);
-            raiz.agregarHijo(r);
-            RESULT=raiz;
-         :}
-        | expr:1 MULTI expr:r {:
-            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_MULTI);
-            raiz.agregarHijo(1);
-            raiz.agregarHijo(r);
-            RESULT=raiz;
-        :}
-        | expr:1 DIVI expr:r {:
-            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_DIVI);
-            raiz.agregarHijo(1);
-            raiz.agregarHijo(r);
-            RESULT=raiz;
-        :}
-        ;
+S ::= METODO_SALIDA
+     |BLOQUE_VARIABLES
+     | METODO_ENTRADA
+     | SENTENCIA_SI
+     | CICLO_DESDE
+     | CONDICION_HACER;
+
+
+//Bloque de declaracion de variables
+BLOQUE_VARIABLES ::= TIPO_VARIABLES CUERPO_BLOQUE_VARIABLES IGUAL VALOR_VARIABLE FINDELINEA BLOQUE_VARIABLES
+                   | TIPO_VARIABLES CUERPO_BLOQUE_VARIABLES FINDELINEA;
+
+//Tipos de variables
+TIPO_VARIABLES ::= INT | REAL | STRING | BOOLEAN | NULL;
+
+//Cuerpo del bloque de declaracion de variables
+CUERPO_BLOQUE_VARIABLES ::= ID COMA CUERPO_BLOQUE_VARIABLES
+                          | ID;
+
+VALOR_VARIABLE ::= TIPO_VARIABLES
+                 | NUMERO
+                 | ID;
+
+//Metodo de salida de datos
+METODO_SALIDA ::= PRINT VARIABLES_SALIDA FINDELINEA METODO_SALIDA
+                | PRINT VARIABLES_SALIDA FINDELINEA;
+
+//Salidas de variables
+VARIABLES_SALIDA ::= STRING COMA VARIABLES_SALIDA
+                   | ID COMA VARIABLES_SALIDA
+                   | STRING
+                   | ID;
+
+//Metodo de entrada de datos
+METODO_ENTRADA ::= GET ID FINDELINEA;
+
+//Sentencia selectiva SI
+SENTENCIA_SI ::= IF CONDICION_SENTENCIA_SI ELSE FINDELINEA CUERPO_SENTENCIA_SI FINDELINEA BLOQUE_SINO
+               | IF CONDICION_SENTENCIA_SI ELSE FINDELINEA CUERPO_SENTENCIA_SI FINDELINEA;
+
+//Condiciones posibles de if
+CONDICION_SENTENCIA_SI ::= ID EQUAL ID ELSE
+                         | ID DIFERENTE ID ELSE
+                         | NUMERO MODULO NUMERO ELSE
+                         | NUMERO MAYQ NUMERO ELSE
+                         | NUMERO MENQ NUMERO ELSE;
+
+//Cuerpo de la sentencia si
+CUERPO_SENTENCIA_SI ::= METODO_SALIDA RETURN VALOR_SALIDA
+                      | METODO_SALIDA;
+
+VALOR_SALIDA ::= ID
+               | TIPO_VARIABLES;
+
+//Tipos de sino
+BLOQUE_SINO ::= ELIF CONDICION_SENTENCIA_SI ELSE CUERPO_SENTENCIA_SI FINDELINEA BLOQUE_SINO
+              | ELIF CUERPO_SENTENCIA_SI FINDELINEA;
+
+//Ciclo Desde
+CICLO_DESDE ::= INICIO_DESDE CUERPO_DESDE;
+
+//Inicio de ciclo desde
+INICIO_DESDE ::= TIPO_VARIABLES ID IGUAL VALOR_VARIABLE FINDELINEA FROM ID WHILE ID MENQ VALOR_VARIABLE INC VALOR_VARIABLE DO FINDELINEA
+               | TIPO_VARIABLES ID IGUAL VALOR_VARIABLE FINDELINEA FROM ID WHILE ID MENQ VALOR_VARIABLE INC VALOR_VARIABLE DO FINDELINEA
+               | TIPO_VARIABLES ID FINDELINEA FROM ID IGUAL VALOR_VARIABLE WHILE ID MENQ VALOR_VARIABLE INC VALOR_VARIABLE DO FINDELINEA
+               | TIPO_VARIABLES ID FINDELINEA FROM ID IGUAL VALOR_VARIABLE WHILE ID MENQ VALOR_VARIABLE DEC VALOR_VARIABLE DO FINDELINEA
+               | FROM TIPO_VARIABLES ID IGUAL VALOR_VARIABLE WHILE ID MENQ VALOR_VARIABLE INC VALOR_VARIABLE DO FINDELINEA
+               | FROM TIPO_VARIABLES ID IGUAL VALOR_VARIABLE WHILE ID MENQ VALOR_VARIABLE DEC VALOR_VARIABLE DO FINDELINEA;
+
+CUERPO_DESDE ::= METODO_SALIDA ID IGUAL ID SUMA VALOR_VARIABLE FINDELINEA
+               | METODO_SALIDA;
+
+CONDICION_HACER ::= DO FINDELINEA CUERPO_HACER FINDELINEA WHILE BOOLEAN MENQ VALOR_VARIABLE;
+
+CUERPO_HACER ::= ID IGUAL VALOR_VARIABLE OPERACION_HACER ID FINDELINEA ID IGUAL ID MODULO VALOR_VARIABLE; 
+
+OPERACION_HACER ::= SUMA | RESTA | MULTI | DIVI | EXP;
