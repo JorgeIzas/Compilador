@@ -48,6 +48,8 @@ public class FXMLDocumentController implements Initializable {
             }
             AnalizadorLexico lex = new AnalizadorLexico(new FileReader(archivo));
             AnalizadorSintactico parser = new AnalizadorSintactico(lex);
+            parser.arbolSintactico.recorrerArbol();
+            parser.arbolSintactico.recorrerArbol(Arbol.TIPO_RECORRIDO_GRAFO);
         } catch (Exception ex) {
         }
         
