@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="575.0" prefWidth="519.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="proyectocompfx.FXMLDocumentController">
+    <children>
+        <Label fx:id="label" layoutX="223.0" layoutY="28.0" minHeight="16" minWidth="69" text="Compilador">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+      <Button fx:id="btnAbrir" layoutX="59.0" layoutY="70.0" mnemonicParsing="false" onAction="#abrirArchivos" text="Abrir">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+      <Separator layoutX="33.0" layoutY="394.0" prefHeight="9.0" prefWidth="450.0" />
+      <TextArea fx:id="txtComp" layoutX="33.0" layoutY="111.0" prefHeight="266.0" prefWidth="450.0" />
+      <TextArea fx:id="txtError" layoutX="72.0" layoutY="418.0" prefHeight="143.0" prefWidth="375.0" />
+    </children>
+</AnchorPane>

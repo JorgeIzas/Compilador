@@ -1,0 +1,84 @@
+package proyectocompfx;
+
+import java_cup.runtime.Symbol;
+
+action code {:
+:}
+
+parser code {:
+    
+    public Arbol arbolSintactico;
+
+
+    @Override
+    public void syntax_error(Symbol sy) {
+        token t=(token)sy.value;
+        done_parsing();
+        report_error("Error sintáctico cerca de \""+ t.getCadena()+"\" ["+t.getRow()+" : "+t.getCol()+"]",null);
+        
+    }
+:}
+
+init with {: 
+    arbolSintactico = new Arbol();
+:};
+
+terminal PROPIEDADES, CLASE, METODO, PUBLICA, PUBLICO, PRIVADA, PROTEGIDA, STRING, INT, REAL;
+terminal BOOLEAN, NULL, OR, AND, IF, ELSE, ELIF, RETURN, FROM, WHILE, INC, DEC, DO, PRINT;
+terminal GET, INSTANCIAR, TRUE, FALSE;
+terminal PARENTL, PARENTR, LLAVEL, LLAVER, CORCHL, CORCHR, PUNTO, COMA, PUNTOCOMA, COMILLA;
+terminal IGUAL, MENQ, MAYQ, EQUAL, DIFERENTE, SUMA, RESTA, MULTI, DIVI, MODULO, EXP;
+terminal token NUMERO, ID;
+
+non terminal expr_list;
+non terminal Nodo expr, expr_part;
+
+precedence left SUMA, RESTA;
+precedence right MULTI, DIVI;
+
+
+start with expr_list;
+
+expr_list ::= expr_list expr_part:e {: 
+                parser.arbolSintactico.agregarHijo(e);
+            :}
+            | expr_part:e {:
+                parser.arbolSintactico.agregarHijo(e);
+            :};
+expr_part ::= ID:id IGUAL expr:e {:
+                Nodo expresion = new Nodo(Nodo.TIPO_EXPRESION,0);
+                Nodo identificador = new Nodo(Nodo.TIPO_IDENTIFICADOR, id.getCadena());
+                Nodo igual = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_IGUAL);
+                expresion.agregarHijo(identificador);
+                expresion.agregarHijo(igual);
+                expresion.agregarHijo(e);
+                RESULT=expresion;
+            :} PUNTOCOMA;
+            
+expr ::=  NUMERO:d {: RESULT=new Nodo(d.getEntero()); :}
+        | ID:id {: RESULT=new Nodo(Nodo.TIPO_IDENTIFICADOR, id.getCadena()); :}
+        |expr:l SUMA expr:r {: 
+            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_SUMA);
+            raiz.agregarHijo(l);
+            raiz.agregarHijo(r);
+            RESULT=raiz; 
+        :}
+        |expr:l RESTA expr:r {: 
+            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_RESTA);
+            raiz.agregarHijo(l);
+            raiz.agregarHijo(r);
+            RESULT=raiz;
+         :}
+        | expr:1 MULTI expr:r {:
+            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_MULTI);
+            raiz.agregarHijo(1);
+            raiz.agregarHijo(r);
+            RESULT=raiz;
+        :}
+        | expr:1 DIVI expr:r {:
+            Nodo raiz = new Nodo(Nodo.TIPO_OPERADOR, Nodo.OP_DIVI);
+            raiz.agregarHijo(1);
+            raiz.agregarHijo(r);
+            RESULT=raiz;
+        :}
+        ;
